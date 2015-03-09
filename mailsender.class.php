@@ -154,7 +154,7 @@ class mailsender{
             }
 
         } catch (SoapFault $e){
-            debugging('mailsender.class.php: Test ws availability KO, '.$e->faultstring, DEBUG_DEVELOPER);
+            self::debugging('mailsender.class.php: Test ws availability KO, '.$e->faultstring);
             if ($this->islogger) {
                 $this->logger->add('mailsender.class.php: Test ws availability KO, '.$e->faultstring, 'ERROR');
             }
@@ -210,7 +210,7 @@ class mailsender{
             if ($this->islogger) {
                 $this->logger->add('mailsender.class.php: Send mail KO, there are errors width idApp, sender, replyAddress, environment or ws availability.', 'ERROR');
             }
-            debugging('mailsender.class.php: Send mail KO, there are errors width idApp, sender, replyAddress, environment or ws availability.', DEBUG_DEVELOPER);
+            self::debugging('mailsender.class.php: Send mail KO, there are errors width idApp, sender, replyAddress, environment or ws availability.');
             return false;
         }
 
@@ -219,7 +219,7 @@ class mailsender{
             if ($this->islogger) {
                 $this->logger->add('mailsender.class.php: Send mail KO. test_availability');
             }
-            debugging('mailsender.class.php: Send mail KO. test_availability', DEBUG_DEVELOPER);
+            self::debugging('mailsender.class.php: Send mail KO. test_availability');
             return false;
         }
 
@@ -228,7 +228,7 @@ class mailsender{
             if ($this->islogger) {
                 $this->logger->add('mailsender.class.php: Send mail KO. messages');
             }
-            debugging('mailsender.class.php: Send mail KO. messages', DEBUG_DEVELOPER);
+            self::debugging('mailsender.class.php: Send mail KO. messages');
             return false;
         }
 
@@ -253,7 +253,7 @@ class mailsender{
                 $this->logger->add('mailsender.class.php: Send mail response value: <![CDATA['.$soapclient->__getLastResponse().']]!>', 'DEBUG');
             }
         } catch (SoapFault $e){
-            debugging('mailsender.class.php: Send mail KO, '.$e->faultstring, DEBUG_DEVELOPER);
+            self::debugging('mailsender.class.php: Send mail KO, '.$e->faultstring);
             if ($this->islogger) {
                 $this->logger->add('mailsender.class.php: Send mail KO, '.$e->faultstring, 'ERROR');
             }
@@ -1009,5 +1009,19 @@ class mailsender{
             $this->debug = $debug;
         }
         return true;
+    }
+
+    /**
+     * Shows a message when php debug is in the highest error_reporting
+     */
+    private static function debugging($message) {
+        $debugdisplay = ini_get_bool('display_errors');
+        if ($debugdisplay && (error_reporting() >= E_ALL | E_STRICT)) {
+            if (defined('CLI_SCRIPT') && CLI_SCRIPT) {
+                echo "++ $message ++\n";
+            } else {
+                echo '<div class="notifytiny debuggingmessage" data-rel="debugging">' , $message , '</div>';
+            }
+        }
     }
 }
