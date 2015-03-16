@@ -1015,8 +1015,9 @@ class mailsender{
      * Shows a message when php debug is in the highest error_reporting
      */
     private static function debugging($message) {
-        $debugdisplay = ini_get_bool('display_errors');
-        if ($debugdisplay && (error_reporting() >= E_ALL | E_STRICT)) {
+        $debugdisplay = ini_get('display_errors');
+
+        if (($debugdisplay == '1' || strtolower($debugdisplay) == 'on') && (error_reporting() >= E_ALL | E_STRICT)) {
             if (defined('CLI_SCRIPT') && CLI_SCRIPT) {
                 echo "++ $message ++\n";
             } else {
