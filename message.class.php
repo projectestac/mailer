@@ -49,18 +49,14 @@ class message {
 		//Set logger
 		$this->islogger = ($log)? $this->get_logger($logdebug, $logpath) : false;
 
-	    if ($this->islogger){
-		    $this->logger->add('message.class.php: Loading class...');
-		}
-
 		//Set bodyType
 		$this->set_bodyType($bodyType);
 
 	    if ($this->islogger){
 			if (in_array(true, $this->error)){
-				$this->logger->add('message.class.php: Class loaded with errors');
+				$this->logger->add('message: Class loaded with errors');
 			}else {
-		        $this->logger->add('message.class.php: Class loaded successfull');
+		        $this->logger->add('message: Class loaded successfull');
 			}
 		}
 	}
@@ -96,7 +92,7 @@ class message {
 		//check if parameter $to is empty
 		if (empty($adress)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_adress parameter $adress is empty', 'ERROR');
+				$this->logger->add('message: set_adress parameter $adress is empty', 'ERROR');
 			}
 			return false;
 		}
@@ -104,7 +100,7 @@ class message {
 	    //check if parameter $in is empty
 		if (empty($in)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_adress parameter $in is empty', 'ERROR');
+				$this->logger->add('message: set_adress parameter $in is empty', 'ERROR');
 			}
 			return false;
 		}
@@ -112,7 +108,7 @@ class message {
 		//check if parameter $in is in the alloweb list
 		if (!in_array($in, $this->alloweb_in)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_adress parameter $in is not alloweb', 'ERROR');
+				$this->logger->add('message: set_adress parameter $in is not alloweb', 'ERROR');
 			}
 			return false;
 		}
@@ -135,7 +131,7 @@ class message {
 		    	}
 		    } else {
 		    	if ($this->islogger){
-		    		$this->logger->add('message.class.php: set_adress parameter $adress array is empty', 'ERROR');
+		    		$this->logger->add('message: set_adress parameter $adress array is empty', 'ERROR');
 		    	}
 		    }
 		} else {
@@ -149,18 +145,18 @@ class message {
 		    	$cnt++;
 			} else {
 			    if ($this->islogger){
-		    		$this->logger->add('message.class.php: set_adress parameter $adress string is empty', 'ERROR');
+		    		$this->logger->add('message: set_adress parameter $adress string is empty', 'ERROR');
 		    	}
 			}
 		}
 
 	    //print log
 		if ($this->islogger){
-			$this->logger->add('message.class.php: set adress to property $'.$in.' OK. Added '.$cnt.' adress');
+			$this->logger->add('message: set adress to property $'.$in.' OK. Added '.$cnt.' adress');
 		}
 		//print debug
 	    if ($this->debug){
-			$this->logger->add('message.class.php: setted property $'.$in.' value is "'.serialize($adress).'"', 'DEBUG');
+			$this->logger->add('message: setted property $'.$in.' value is "'.serialize($adress).'"', 'DEBUG');
 		}
 
 		return true;
@@ -177,7 +173,7 @@ class message {
 	    //check if parameter $in is empty
 		if (empty($in)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: get_adress parameter $in is empty', 'ERROR');
+				$this->logger->add('message: get_adress parameter $in is empty', 'ERROR');
 			}
 			return false;
 		}
@@ -185,18 +181,18 @@ class message {
 		//check if parameter $in is in the alloweb list
 		if (!in_array($in, $this->alloweb_in)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: get_adress parameter $in is not alloweb', 'ERROR');
+				$this->logger->add('message: get_adress parameter $in is not alloweb', 'ERROR');
 			}
 			return false;
 		}
 
 	    //print log
 		if ($this->islogger){
-			$this->logger->add('message.class.php: get adress of property $'.$in.' OK. Getted '.count($this->{$in}).' adress');
+			$this->logger->add('message: get adress of property $'.$in.' OK. Getted '.count($this->{$in}).' adress');
 		}
 		//print debug
 	    if ($this->debug){
-			$this->logger->add('message.class.php: getted property $'.$in.' value is "'.serialize($this->{$in}).'"', 'DEBUG');
+			$this->logger->add('message: getted property $'.$in.' value is "'.serialize($this->{$in}).'"', 'DEBUG');
 		}
 
 		return $this->{$in};
@@ -279,7 +275,7 @@ class message {
 		// Check if parameter $bodyType is passed
 		if (empty($bodyType)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_bodyType parameter is empty', 'ERROR');
+				$this->logger->add('message: set_bodyType parameter is empty', 'ERROR');
 			}
 			$this->error['bodyType'] = true;
 			return false;
@@ -288,7 +284,7 @@ class message {
 		// Check if the value passed in $bodyType is in the $allowebBodyType
 		if (!in_array($bodyType, $this->allowed_bodyType)){
 		    if ($this->islogger){
-				$this->logger->add('message.class.php: set_bodyType parameter is not alloweb', 'ERROR');
+				$this->logger->add('message: set_bodyType parameter is not alloweb', 'ERROR');
 			}
 			$this->error['bodyType'] = true;
 			return false;
@@ -299,11 +295,11 @@ class message {
 
 		//print log
 		if ($this->islogger){
-			$this->logger->add('message.class.php: set bodyType OK');
+			$this->logger->add('message: set bodyType OK');
 		}
 		//print debug
 	    if ($this->debug){
-			$this->logger->add('message.class.php: bodyType property is "'.$this->bodyType.'"', 'DEBUG');
+			$this->logger->add('message: bodyType property is "'.$this->bodyType.'"', 'DEBUG');
 		}
 
 		return true;
@@ -331,7 +327,7 @@ class message {
 	    // Check if parameter $str is passed
 		if (empty($str)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_subject parameter $str is empty', 'ERROR');
+				$this->logger->add('message: set_subject parameter $str is empty', 'ERROR');
 			}
 			$this->error['subject'] = true;
 			return false;
@@ -342,7 +338,7 @@ class message {
 
 		if (strlen($str) < 1){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_subject parameter $str is length 0', 'ERROR');
+				$this->logger->add('message: set_subject parameter $str is length 0', 'ERROR');
 			}
 			$this->error['subject'] = true;
 			return false;
@@ -353,11 +349,11 @@ class message {
 
 	    //print log
 		if ($this->islogger){
-			$this->logger->add('message.class.php: set subject OK');
+			$this->logger->add('message: set subject OK');
 		}
 		//print debug
 	    if ($this->debug){
-			$this->logger->add('message.class.php: subject property is "'.$str.'"', 'DEBUG');
+			$this->logger->add('message: subject property is "'.$str.'"', 'DEBUG');
 		}
 
 		return true;
@@ -386,7 +382,7 @@ class message {
 		// Check if parameter $str is passed
 		if (empty($str)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_bodyContent parameter $str is empty', 'ERROR');
+				$this->logger->add('message: set_bodyContent parameter $str is empty', 'ERROR');
 			}
 			$this->error['bodyContent'] = true;
 			return false;
@@ -397,7 +393,7 @@ class message {
 
 		if (strlen($str) < 1){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_bodyContent parameter $str is length 0', 'ERROR');
+				$this->logger->add('message: set_bodyContent parameter $str is length 0', 'ERROR');
 			}
 			$this->error['bodyContent'] = true;
 			return false;
@@ -408,11 +404,11 @@ class message {
 
 	    //print log
 		if ($this->islogger){
-			$this->logger->add('message.class.php: set bodyContent OK');
+			$this->logger->add('message: set bodyContent OK');
 		}
 		//print debug
 	    if ($this->debug){
-			$this->logger->add('message.class.php: bodyContent property is "'.$str.'"', 'DEBUG');
+			$this->logger->add('message: bodyContent property is "'.$str.'"', 'DEBUG');
 		}
 
 		return true;
@@ -442,7 +438,7 @@ class message {
 		//Check if parameter $name is passed
 	    if (empty($name)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_attachByPathOnWsServer parameter $name is empty', 'ERROR');
+				$this->logger->add('message: set_attachByPathOnWsServer parameter $name is empty', 'ERROR');
 			}
 			return false;
 		}
@@ -450,7 +446,7 @@ class message {
 	    //Check if parameter $path is passed
 	    if (empty($path)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_attachByPathOnWsServer parameter $path is empty', 'ERROR');
+				$this->logger->add('message: set_attachByPathOnWsServer parameter $path is empty', 'ERROR');
 			}
 			return false;
 		}
@@ -463,11 +459,11 @@ class message {
 
 	    //print log
 		if ($this->islogger){
-			$this->logger->add('message.class.php: set_attachByPathOnWsServer OK');
+			$this->logger->add('message: set_attachByPathOnWsServer OK');
 		}
 		//print debug
 	    if ($this->debug){
-			$this->logger->add('message.class.php: attachByPathOnWsServer properties are {$name: "'.$name.'", $path: "'.$path.'"}', 'DEBUG');
+			$this->logger->add('message: attachByPathOnWsServer properties are {$name: "'.$name.'", $path: "'.$path.'"}', 'DEBUG');
 		}
 
 		return true;
@@ -485,7 +481,7 @@ class message {
 		//Check if parameter $name is passed
 	    if (empty($name)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_attachByPathOnAppServer parameter $name is empty', 'ERROR');
+				$this->logger->add('message: set_attachByPathOnAppServer parameter $name is empty', 'ERROR');
 			}
 			return false;
 		}
@@ -493,7 +489,7 @@ class message {
 	    //Check if parameter $path is passed
 	    if (empty($path)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_attachByPathOnAppServer parameter $path is empty', 'ERROR');
+				$this->logger->add('message: set_attachByPathOnAppServer parameter $path is empty', 'ERROR');
 			}
 			return false;
 		}
@@ -506,11 +502,11 @@ class message {
 
 	    //print log
 		if ($this->islogger){
-			$this->logger->add('message.class.php: set_attachByPathOnAppServer OK');
+			$this->logger->add('message: set_attachByPathOnAppServer OK');
 		}
 		//print debug
 	    if ($this->debug){
-			$this->logger->add('message.class.php: attachByPathOnAppServer properties are {$name: "'.$name.'", $path: "'.$path.'"}', 'DEBUG');
+			$this->logger->add('message: attachByPathOnAppServer properties are {$name: "'.$name.'", $path: "'.$path.'"}', 'DEBUG');
 		}
 
 		return true;
@@ -529,7 +525,7 @@ class message {
 	    //Check if parameter $name is passed
 	    if (empty($name)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_attachByContent parameter $name is empty', 'ERROR');
+				$this->logger->add('message: set_attachByContent parameter $name is empty', 'ERROR');
 			}
 			return false;
 		}
@@ -537,7 +533,7 @@ class message {
 	    //Check if parameter $path is passed
 	    if (empty($attachbinary)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_attachByContent parameter $attachbinary is empty', 'ERROR');
+				$this->logger->add('message: set_attachByContent parameter $attachbinary is empty', 'ERROR');
 			}
 			return false;
 		}
@@ -545,7 +541,7 @@ class message {
 	    //Check if parameter $path is passed
 	    if (empty($attachmimetype)){
 			if ($this->islogger){
-				$this->logger->add('message.class.php: set_attachByContent parameter $attachmimetype is empty', 'ERROR');
+				$this->logger->add('message: set_attachByContent parameter $attachmimetype is empty', 'ERROR');
 			}
 			return false;
 		}
@@ -558,11 +554,11 @@ class message {
 
 	    //print log
 		if ($this->islogger){
-			$this->logger->add('message.class.php: set_attachByPathOnAppServer OK');
+			$this->logger->add('message: set_attachByPathOnAppServer OK');
 		}
 		//print debug
 	    if ($this->debug){
-			$this->logger->add('message.class.php: attachByPathOnAppServer properties are {$name: "'.$name.'", $attachbinary: "'.$attachbinary.'", $attachmimetype: "'.$attachmimetype.'"}', 'DEBUG');
+			$this->logger->add('message: attachByPathOnAppServer properties are {$name: "'.$name.'", $attachbinary: "'.$attachbinary.'", $attachmimetype: "'.$attachmimetype.'"}', 'DEBUG');
 		}
 
 		return true;

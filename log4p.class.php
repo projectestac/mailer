@@ -31,13 +31,12 @@
   	 * Used to close de file pointer
   	 */
   	function __destruct(){
-  		$this->add('log4p.class.php: trying to close file log pointer', 'DEBUG');
+  		$this->add('log4p: Closing log file', 'DEBUG');
   		if (!fclose($this->filelogpointer)){
   			$this->add('Logger: trying to close file log pointer failed');
   		}
 
   		$this->savetofile = false;
-  		$this->add('log4p.class.php: file log closed');
   	}
 
   	/**
@@ -55,7 +54,7 @@
   		}
 
   		//add log to our variable
-  		$this->log[] = date('[Y-m-d H:i:s] ').'   *'.$type.'*   '.$str;
+  		$this->log[] = date('[Y-m-d H:i:s] ').' *'.$type.'*   '.$str;
 
   		//save log to file if its switched on
   		if ($this->savetofile){
@@ -81,7 +80,7 @@
   	    //save in file
   		if (!fwrite($this->filelogpointer, $str.$delimiter)){
   			$this->savetofile = false;
-  			$this->add('log4p.class.php: addtofile cant write in log file. Save to file has been switch to off.', 'ERROR');
+  			$this->add('log4p: addtofile cant write in log file. Save to file has been switch to off.', 'ERROR');
   			return false;
   		}
 
@@ -116,7 +115,7 @@
 
   		//check if parameters are set to true and are correct
   		if ($state == false || $savetofilepath == ''){
-  			$this->add('log4p.class.php: its off becouse the parameters to switch it on sets it', 'WARNING');
+  			$this->add('log4p: its off becouse the parameters to switch it on sets it', 'WARNING');
   		    return false;
   		}
 
@@ -156,7 +155,7 @@
   			if (!mkdir($pwd.$filepatharray[count($filepatharray)-2])){*/
 //*********** END
 
-  				$this->add('log4p.class.php: folder not exits and its imposible to create it', 'WARNING');
+  				$this->add('log4p: folder not exits and its imposible to create it', 'WARNING');
   				return false;
   			}
   		}
@@ -168,19 +167,19 @@
 //*********** ORIGINAL
 		/*if (!$file = fopen($pwd.$savetofilepath, "a+")){*/
 //*********** END
-  			$this->add('log4p.class.php: file not exits and its imposible to create it', 'WARNING');
+  			$this->add('log4p: file not exits and its imposible to create it', 'WARNING');
   			return false;
   		}
 
   		//test if its posible to save in file
   		if (!fwrite($file, $delimiter)){
-  			$this->add('log4p.class.php: imposible to write in log file. Save to file has been switch to off.', 'ERROR');
+  			$this->add('log4p: imposible to write in log file. Save to file has been switch to off.', 'ERROR');
   			return false;
   		}
 
   		$this->filelogpointer = $file;
   		$this->savetofile = true;
-  		$this->add('log4p.class.php: loaded correctly in '.$savetofilepath);
+  		$this->add('log4p: loaded correctly in '.$savetofilepath);
   		return true;
   	}
   }
