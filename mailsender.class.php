@@ -5,10 +5,8 @@
  * REQUIREMENTS:
  * - have enabled the PHP SOAP library
  *
- *
  * WORKDIR:
  * new mailsender -> add_message -> send_mail
- *
  *
  * Basic example of using this class:
  *
@@ -20,10 +18,8 @@
  * $sender->add_message( $to, $cc, $bcc, $subject, $body);
  * $sender->send_mail();
  *
- *
  * @author IECISA @mmartinez
  * @version 1.2
- *
  */
 
 class mailsender {
@@ -323,12 +319,9 @@ class mailsender {
                                                </destination>';
         }
 
-// XTEC ************ ADDED -> Test the charset to do conversions
-// 2011.03.16 @mmartinez
-        //Test de subject and bodyContent subject
+        // Test the charset to do conversions
         $subject = mb_convert_encoding($subject, "UTF-8", 'auto');
         $bodyContent = mb_convert_encoding($bodyContent, "UTF-8", 'auto');
-//************ END
 
         $message .= '                     </destinationAddresses>
                              <subject><![CDATA['.$subject.']]></subject>
@@ -365,24 +358,8 @@ class mailsender {
                         <fileName><![CDATA['.$attachfilename.']]></fileName>
                         <attachmentContent>';
                     if (is_file($attachfilecontents[$cnt])) {
-                        //get file type and set it to $attachmimetypes[$cnt]
-
-//XTEC ************ MODIFIED -> Call to the new method added to get file mime type
-//2011.03.18 @mmartinez
+                        // Get file type and set it to $attachmimetypes[$cnt]
                         $attachmimetypes[$cnt] = $this->get_mime_type($attachfilecontents[$cnt]);
-//************** ORIGINAL
-                        /*if (function_exists('finfo_file')) {
-                            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                            $attachmimetypes[$cnt] = finfo_file($finfo, $attachfilecontents[$cnt]);
-                            finfo_close($finfo);
-                        } else if (require_once('lib/mime.php')){
-                            $attachmimetypes[$cnt] = mime_content_type($attachfilecontents[$cnt]);
-                        }else {
-                            $file = escapeshellarg($attachfilecontents[$cnt]);
-                            $attachmimetypes[$cnt] = shell_exec("file -bi " . $file);
-                        }*/
-//************** END
-
                         $attachfilecontents[$cnt] = base64_encode(fread(fopen($attachfilecontents[$cnt], 'r'), filesize($attachfilecontents[$cnt])));
 
                     } else if (empty($attachmimetypes[$cnt])) {
@@ -595,13 +572,8 @@ class mailsender {
         $this->soap_client = @new SoapClient($url, $options);
     }
 
-// XTEC ************ ADDED -> Method to get the mime type of a given file
-// 2011.03.16 @mmartinez
     /**
-     *
      * Method to get the mime type of a given file
-     *
-     *
      *
      * @param string $fn -> absolute path to the file
      * @return string    -> mime type of the given file
@@ -826,7 +798,6 @@ class mailsender {
       #-- done
       return $type;
     }
-//*********** END
 
     ////////////////////////////////////////////////////////
     //////////            LOG FUNCTIONS            /////////

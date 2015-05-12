@@ -14,7 +14,6 @@ final class log4p {
      */
     private $log = array();
     private $savetofile;
-    private $savetofilepath;
     private $debug;
 
     /**
@@ -169,50 +168,24 @@ final class log4p {
         $savetofilepath = str_replace('\\', '/', $savetofilepath);
         $filepatharray = explode("/", $savetofilepath);
 
-// XTEC *********** DELETED -> Take out becouse now the receive the full path
-// 2011.04.01 @mmartinez
-    /*//get actuall path
-        $pwd = dirname(__FILE__);
-        $pwd = str_replace('\\', '/', $pwd);
-        //go one folder up
-        $pwdarray = explode ('/', $pwd);*/
-//*********** END
         $pwd = "";
 
-// XTEC ************ MODIFIED -> Parse the new full path
-// 2011.04.01 @mmartinez
+        // Parse the full path
         for ($i=0;$i<count($filepatharray)-1;$i++) {
             $pwd .= $filepatharray[$i].'/';
         }
             $pwd = substr($pwd, 0, strlen($pwd)-1);
-//************ ORIGINAL
-    /*for ($i=0;$i<count($pwdarray)-1;$i++){
-            $pwd .= $pwdarray[$i].'/';
-        }*/
-//*********** END
 
-        //check if exits log folder
-// XTEC ************ MODIFIED -> Take the new full path
-// 2011.04.01 @mmartinez
+        // Check if exits log folder
         if (!is_dir($pwd)){
             if (!mkdir($pwd)){
-//*********** ORIGINAL
-    /*if (!is_dir($pwd.$filepatharray[count($filepatharray)-2])){
-            if (!mkdir($pwd.$filepatharray[count($filepatharray)-2])){*/
-//*********** END
-
                 $this->add('log4p: folder not exits and its imposible to create it', 'WARNING');
                 return false;
             }
         }
 
-        //open or create log file
-// XTEC ************ MODIFIED -> Take the new full path
-// 2011.04.01 @mmartinez
+        // Open or create log file
         if (!$file = fopen($savetofilepath, "a+")) {
-//*********** ORIGINAL
-    /*if (!$file = fopen($pwd.$savetofilepath, "a+")){*/
-//*********** END
             $this->add('log4p: file not exits and its imposible to create it', 'WARNING');
             return false;
         }
