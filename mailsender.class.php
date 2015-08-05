@@ -36,7 +36,7 @@ class mailsender {
     /**
      * Url of the allowed environments
      */
-    private $allowed_environments = array(
+    private static $allowed_environments = array(
         'DES' => 'http://integracio.bus.ensenyament.intranet.gencat.cat/event/ServeisComuns/intern/EnviaCorreu/a1/EnviaCorreu',
         'INT' => 'http://integracio.bus.ensenyament.intranet.gencat.cat/event/ServeisComuns/intern/EnviaCorreu/a1/EnviaCorreu',
         'ACC' => 'http://preproduccio.bus.ensenyament.intranet.gencat.cat/event/ServeisComuns/intern/EnviaCorreu/a1/EnviaCorreu',
