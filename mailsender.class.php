@@ -116,8 +116,7 @@ class mailsender {
         } catch (Exception $e) {
             throw new Exception('Mailsender: Test availability failed with message "'. $e->getMessage().'"');
         }
-
-        $this->add_log('Class loaded successfull', 'DEBUG');
+        //$this->add_log('Class loaded successfull', 'DEBUG');
     }
 
     private function call_function($function, $params) {
@@ -140,7 +139,7 @@ class mailsender {
 
         // Response OK
         if (isset($response->status) && $response->status == "OK") {
-            $this->add_log($function.": Request: \n".$this->soap_client->__getLastRequest(), 'DEBUG');
+            //$this->add_log($function.": Request: \n".$this->soap_client->__getLastRequest(), 'DEBUG');
             $this->add_log($function.": Response: \n".$this->soap_client->__getLastResponse(), 'DEBUG');
             return $response;
         }
@@ -220,7 +219,6 @@ class mailsender {
         $this->messages = array();
 
         return $return;
-
     }
 
     /**
@@ -242,6 +240,35 @@ class mailsender {
             $attach[0], $attach[1], $attach[2], $attach[3], $message->get_bodyType());
     }
 
+    private function check_message($to, $cc, $bcc, $subject, $bodyContent, $bodyType) {
+
+        // Check if there are destinataris
+        $errorstr = "";
+        if (empty($to) && empty($cc) && empty($bcc)) {
+            $errorstr .= 'Parameters $to, $cc and $bcc are empty, and there isn\'t any destinatary';
+        }
+
+        // Check if there are body contents
+        $parameters = array('subject', 'bodyContent', 'bodyType');
+        foreach ($parameters as $parameter) {
+            if (empty(${$parameter})) {
+                $errorstr .= (!empty($errorstr))? ', ' : '';
+                $errorstr .= 'parameter $'.$parameter.' is empty';
+            }
+        }
+        if ($bodyType != 'text/plain' && $bodyType != 'text/html') {
+            $errorstr .= 'parameter bodyType is incorrect, it must be "text/plain" or "text/html"';
+        }
+
+        // If the are errors add message to logger and stop add messages
+        if (!empty($errorstr)) {
+            $cntmsg = count($this->messages) + 1;
+            $this->add_log('add_message: '.$cntmsg.' KO, '.$errorstr, 'ERROR');
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Add messages to the request xml
      *
@@ -259,133 +286,83 @@ class mailsender {
      */
     public function add_message($to = array(), $cc = array(), $bcc = array(), $subject = '', $bodyContent = '', $attachfilenames = array(), $attachfilepaths = array(), $attachfilecontents = array(), $attachmimetypes = array(), $bodyType = 'text/plain') {
 
-        $cntmsg = count($this->messages) + 1;
-
-        // Check if there are destinataris
-        $parameters = array('to', 'cc', 'bcc');
-        $errorcnt = 0;
-        $errorstr = '';
-        foreach ($parameters as $parameter) {
-            if (empty(${$parameter})) {
-                $errorcnt++;
-            }
-        }
-        if ($errorcnt == count($parameters)) {
-            $errorstr .= 'Parameters $to, $cc and $bcc are empty, and there isnt any destinatary';
-        }
-
-        // Check if there are body contents
-        $parameters = array('subject', 'bodyContent', 'bodyType');
-        foreach ($parameters as $parameter) {
-            if (empty(${$parameter})) {
-                $errorstr .= (!empty($errorstr))? ', ' : '';
-                $errorstr .= 'parameter $'.$parameter.' is empty';
-                continue;
-            }
-            if ($parameter == 'bodyType' && ${$parameter} != 'text/plain' && ${$parameter} != 'text/html') {
-                $errorstr .= 'parameter bodyType is incorrect, it must be "text/plain" or "text/html"';
-            }
-        }
-
-        // If the are errors add message to logger and stop add messages
-        if ($errorstr != '') {
-            $this->add_log('add_message: '.$cntmsg.' KO, '.$errorstr, 'ERROR');
+        // Check for message errors
+        if(!$this->check_message($to, $cc, $bcc, $subject, $bodyContent, $bodyType)) {
             return false;
         }
+        $cntmsg = count($this->messages) + 1;
 
-        // Set xml
-        $message = '                    <correu>
-                          <from>'.$this->sender.'</from>
-                          <replyAddresses>
-                              <address>'.$this->replyAddress.'</address>
-                          </replyAddresses>
-                          <destinationAddresses>';
-        foreach ($to as $t) {
-            $message .= '                          <destination>
-                                  <address>'.$t.'</address>
-                                  <type>TO</type>
-                            </destination>';
+        // Generate XML
+        $messagexml = '<correu><from>'.$this->sender.'</from><replyAddresses><address>'.$this->replyAddress.'</address></replyAddresses><destinationAddresses>'."\n";
+        foreach ($to as $address) {
+            $messagexml .= '<destination><address>'.$address.'</address><type>TO</type></destination>'."\n";
         }
-        foreach ($cc as $c) {
-            $message .= '                      <destination>
-                                           <address>'.$c.'</address>
-                                           <type>CC</type>
-                                         </destination>';
+        foreach ($cc as $address) {
+            $messagexml .= '<destination><address>'.$address.'</address><type>CC</type></destination>'."\n";
         }
-        foreach ($bcc as $bc) {
-            $message .= '                      <destination>
-                                                   <address>'.$bc.'</address>
-                                                   <type>BCC</type>
-                                               </destination>';
+        foreach ($bcc as $address) {
+            $messagexml .= '<destination><address>'.$address.'</address><type>BCC</type></destination>'."\n";
         }
 
         // Test the charset to do conversions
         $subject = mb_convert_encoding($subject, "UTF-8", 'auto');
         $bodyContent = mb_convert_encoding($bodyContent, "UTF-8", 'auto');
 
-        $message .= '                     </destinationAddresses>
-                             <subject><![CDATA['.$subject.']]></subject>
-                             <mailBody>
-                                  <bodyType>'.$bodyType.'</bodyType>
-                                  <bodyContent><![CDATA['.$bodyContent.']]></bodyContent>
-                             </mailBody>';
+        $messagexml .= '</destinationAddresses><subject><![CDATA['.$subject.']]></subject>'."\n";
+        $debugxml = $messagexml.'[..BODY NOT INCLUDED IN DEBUG..]</correu>';
+        $messagexml .= '<mailBody><bodyType>'.$bodyType.'</bodyType><bodyContent><![CDATA['.$bodyContent.']]></bodyContent></mailBody>'."\n";
 
         if (!empty($attachfilenames) && (!empty($attachfilepaths) || (!empty($attachfilecontents) && !empty($attachmimetypes)))) {
             $cnt = 0;
-            $message .= "\n".'        <attachments>';
+            $attatchmentsxml = "";
             foreach ($attachfilenames as $attachfilename) {
-                if (empty($attachfilename) || (empty($attachfilepaths[$cnt]) && empty($attachfilecontents[$cnt]) && empty($attachmimetypes[$cnt]))){
+                if (empty($attachfilename) || (empty($attachfilepaths[$cnt]) && empty($attachfilecontents[$cnt]) && empty($attachmimetypes[$cnt]))) {
                     $cnt++;
                     continue;
                 }
 
-                $message .= "\n".'<attachment>'."\n";
+                $attatchmentxml = '<attachment>'."\n";
                 if (!empty($attachfilepaths[$cnt])) {
-                    //file is posted in a path of the server
+                    // File is posted in a path of the server
 
-                    //check that file exits
+                    // Check that file exits
                     if (!is_file($attachfilepaths[$cnt])) {
                         $cnt++;
-                        $message = substr($message, 0, strlen($message)-14);
                         $this->add_log('Add attachfile '.$cnt.' to message '.$cntmsg.' KO, attachfilepath is not a valid path. Cancel add to messages', 'ERROR');
                         return false;
                     }
-                    $message .= '<fileName>'.$attachfilename.'</fileName>
-                        <filePath>'.$attachfilepaths[$cnt].'</filePath>';
-                }else if (!empty($attachfilecontents[$cnt])) {
-                    //file is in base64 bin mode
-                    $message .= '
-                        <fileName><![CDATA['.$attachfilename.']]></fileName>
-                        <attachmentContent>';
+                    $attatchmentxml .= '<fileName>'.$attachfilename.'</fileName><filePath>'.$attachfilepaths[$cnt].'</filePath>'."\n";
+                } else if (!empty($attachfilecontents[$cnt])) {
+                    // File is in base64 bin mode
+                    $attatchmentxml .= '<fileName><![CDATA['.$attachfilename.']]></fileName><attachmentContent>'."\n";
                     if (is_file($attachfilecontents[$cnt])) {
                         // Get file type and set it to $attachmimetypes[$cnt]
                         $attachmimetypes[$cnt] = $this->get_mime_type($attachfilecontents[$cnt]);
                         $attachfilecontents[$cnt] = base64_encode(fread(fopen($attachfilecontents[$cnt], 'r'), filesize($attachfilecontents[$cnt])));
-
                     } else if (empty($attachmimetypes[$cnt])) {
-                        $this->add_log('Add message '.$cntmsg.' KO, attachmimetypes not found for attach '.($cnt+1).'. Cancell add messages.', 'ERROR');
+                        $this->add_log('Add message '.$cntmsg.' KO, attachmimetypes not found for attach '.($cnt + 1).'. Cancell add to messages.', 'ERROR');
                         return false;
                     }
-                    $message .= '        <fileContent>'.$attachfilecontents[$cnt].'</fileContent>
-                            <mimeType>'.$attachmimetypes[$cnt].'</mimeType>
-                        </attachmentContent>';
+                    $attatchmentxml .= '<fileContent>'.$attachfilecontents[$cnt].'</fileContent><mimeType>'.$attachmimetypes[$cnt].'</mimeType></attachmentContent>'."\n";
                 } else {
-                    $message = substr($message, 0, strlen($message)-14);
                     continue;
                 }
-                $message .= "\n".'</attachment>';
+                $attatchmentxml .= '</attachment>'."\n";
+                $attatchmentsxml .= $attatchmentxml;
                 $cnt++;
             }
 
-            $message .= "\n".'</attachments>';
+            if (!empty($attatchmentsxml)) {
+                $messagexml .= '<attachments>'.$attatchmentsxml.'</attachments>'."\n";
+            }
         }
 
-        $message .= "\n".'</correu>';
+        $messagexml .= '</correu>';
 
         // Add to messages array
-        $this->messages[] = $message;
+        $this->messages[] = $messagexml;
         $cnt = count($this->messages);
-        $this->add_log('Add message '.$cnt.' OK, message: "'."\n".'<![CDATA['.$message.']]>"', 'DEBUG');
+        $this->add_log('Add message '.$cnt.' OK, message: "'."\n".$debugxml, 'DEBUG');
         return true;
     }
 
