@@ -45,6 +45,8 @@ class mailsender {
         'FRM' => 'http://bus.ensenyament.intranet.gencat.cat/event/ServeisComuns/intern/EnviaCorreu/a1/EnviaCorreu'
     );
 
+    private static $maxretry = 5;
+
     /**
      *  Other variables used
      */
@@ -78,16 +80,16 @@ class mailsender {
      * @param bool   $logdebug     -> set if a full log is wanted or just a resume log
      * @param string $logpath      -> set the full path where the log will be stored
      */
-    function __construct($idApp, $replyAddress = '', $sender = 'educacio', $environment = 'PRO', $log = false, $logdebug = false, $logpath = '', $proxyoptions = false) {
+    function __construct($idapp, $replyaddress = '', $sender = 'educacio', $environment = 'PRO', $log = false, $logdebug = false, $logpath = '', $proxyoptions = false) {
         $this->logger = ($log)? $this->get_logger($logdebug, $logpath) : false;
-        $this->messages = array();
+        $this->clear_messages();
 
-        if (!$this->set_idapp($idApp)) {
-            throw new Exception('Mailsender: the idApp parameter is mandatory');
+        if (!$this->set_idapp($idapp)) {
+            throw new Exception('Mailsender: the idapp parameter is mandatory');
         }
 
-        if (!$this->set_replyAddress($replyAddress)) {
-            throw new Exception('Mailsender: "'.$replyAddress.'" is not a valid replyaddress');
+        if (!$this->set_replyAddress($replyaddress)) {
+            throw new Exception('Mailsender: "'.$replyaddress.'" is not a valid replyaddress');
         }
 
         if (!$this->set_sender($sender)) {
@@ -124,10 +126,13 @@ class mailsender {
             set_time_limit(120);
             $response = $this->soap_client->__soapCall($function, array($params));
         } catch (SoapFault $e) {
-            $this->add_log($function.': Error -> '.$e->faultstring, 'ERROR');
-            $this->add_log($function.": Request: \n".$this->soap_client->__getLastRequest(), 'DEBUG');
+            $this->add_log($function.': SoapFault Exception -> '.$e->faultstring, 'ERROR');
+            $request = $this->soap_client->__getLastRequest();
+            // The limit on the body is 4647, maybe this could be the error
+            $length = strlen($request);
+            $this->add_log($function.": Request (Length $length): \n".$request, 'DEBUG');
             $this->add_log($function.": Response: \n".$this->soap_client->__getLastResponse(), 'DEBUG');
-            throw new Exception($e->faultstring);
+            throw $e;
         }
 
         if (empty($response)) {
@@ -188,7 +193,17 @@ class mailsender {
 
         try {
             $response = $this->call_function('enviament', $messages);
+        } catch (SoapFault $e) {
+            $this->increase_message_counters();
+
+            // Re-init SOAP
+            $this->init_soap();
+
+            $this->add_log('send_mail: Send mail SoapFault Exception KO', 'ERROR');
+            return false;
         } catch (Exception $e) {
+            // In case of KO, do not try again
+            $this->clear_messages();
             $this->add_log('send_mail: Send mail KO', 'ERROR');
             return false;
         }
@@ -215,8 +230,7 @@ class mailsender {
         }
         $this->add_log('send_mail: Response messages resume: '.(count($return)-$errors).' OK, '.$errors.' KO, '.count($return).' Total');
 
-        // Unset requested messages
-        $this->messages = array();
+        $this->clear_messages();
 
         return $return;
     }
@@ -227,7 +241,7 @@ class mailsender {
      * @param object $message -> Object with the message to add
      * @return bool           -> true if all ok, false if not
      */
-    public function add ($message = null) {
+    public function add ($message) {
 
         if (empty($message)) {
             $this->add_log('add: message is empty', 'ERROR');
@@ -240,7 +254,7 @@ class mailsender {
             $attach[0], $attach[1], $attach[2], $attach[3], $message->get_bodyType());
     }
 
-    private function check_message($to, $cc, $bcc, $subject, $bodyContent, $bodyType) {
+    private function check_message($to, $cc, $bcc, $subject, $bodycontent, $bodytype) {
 
         // Check if there are destinataris
         $errorstr = "";
@@ -249,14 +263,14 @@ class mailsender {
         }
 
         // Check if there are body contents
-        $parameters = array('subject', 'bodyContent', 'bodyType');
+        $parameters = array('subject', 'bodycontent', 'bodytype');
         foreach ($parameters as $parameter) {
             if (empty(${$parameter})) {
                 $errorstr .= (!empty($errorstr))? ', ' : '';
                 $errorstr .= 'parameter $'.$parameter.' is empty';
             }
         }
-        if ($bodyType != 'text/plain' && $bodyType != 'text/html') {
+        if ($bodytype != 'text/plain' && $bodytype != 'text/html') {
             $errorstr .= 'parameter bodyType is incorrect, it must be "text/plain" or "text/html"';
         }
 
@@ -360,10 +374,55 @@ class mailsender {
         $messagexml .= '</correu>';
 
         // Add to messages array
-        $this->messages[] = $messagexml;
+        $this->add_message_to_queue($messagexml);
         $cnt = count($this->messages);
         $this->add_log('Add message '.$cnt.' OK, message: "'."\n".$debugxml, 'DEBUG');
         return true;
+    }
+
+    private function add_message_to_queue($xml) {
+        $message = new StdClass();
+        $message->xml = $xml;
+        $message->counter = 0;
+        $this->messages[] = $message;
+    }
+
+    private function increase_message_counters() {
+        foreach ($this->messages as $i => $unused) {
+            if ($this->messages[$i]->counter >= self::$maxretry) {
+                unset($this->messages[$i]);
+            } else {
+                $this->messages[$i]->counter++;
+            }
+        }
+    }
+
+    private function clear_messages() {
+        // Unset requested messages
+        $this->messages = array();
+    }
+
+    /**
+     * Function to get messages than convert array to string
+     *
+     * @return string -> full XML to be send
+     */
+    private function get_messages() {
+
+        // Check that messages are not empty
+        if (empty($this->messages)) {
+            $this->add_log('get_messages: No messages to send');
+            return false;
+        }
+
+        // Convert array to string
+        $messagesxml = '<idApp>'.$this->idApp.'</idApp>';
+        foreach ($this->messages as $message) {
+            $messagesxml .= $message->xml;
+        }
+        $messagesxml = mb_convert_encoding($messagesxml, "UTF-8", 'auto');
+
+        return new SoapVar('<ns1:PeticioEnviament>'.$messagesxml.'</ns1:PeticioEnviament>', XSD_ANYXML);
     }
 
 ////////////////////////////////////////////////////////
@@ -456,26 +515,6 @@ class mailsender {
         $this->add_log('set_environment: Environment "'.$this->environment.'"', 'DEBUG');
         $this->add_log('set_environment: WSDLurl "'.$this->wsurl.'"', 'DEBUG');
         return true;
-    }
-
-    /**
-     * Function to get messages than convert array to string
-     *
-     * @return string -> full XML to be send
-     */
-    private function get_messages() {
-
-        // Check that messages are not empty
-        if (empty($this->messages)) {
-            $this->add_log('get_messages: No messages to send');
-            return false;
-        }
-
-        // Convert array to string
-        $messagesxml = '<idApp>'.$this->idApp.'</idApp>'.implode("", $this->messages);
-        $messagesxml = mb_convert_encoding($messagesxml, "UTF-8", 'auto');
-
-        return new SoapVar('<ns1:PeticioEnviament>'.$messagesxml.'</ns1:PeticioEnviament>',XSD_ANYXML);
     }
 
     /**

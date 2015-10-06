@@ -13,6 +13,7 @@
 
 define('TEXTPLAIN', 'text/plain');
 define('TEXTHTML', 'text/html');
+define('MAXCONTENTLENGTH', '3950');
 
 class message {
 
@@ -307,9 +308,16 @@ class message {
             return false;
         }
 
+        $bytes = mb_strlen($str, '8bit');
+        /*if ($bytes > MAXCONTENTLENGTH) {
+            $this->add_log("The body is longer than ".MAXCONTENTLENGTH." bytes: $bytes", 'ERROR');
+            $this->error['bodyContent'] = true;
+            return false;
+        }*/
+
         $this->bodyContent = $str;
 
-        $this->add_log('set_bodyContent OK, bodyContent is '.strlen($this->bodyContent).' characters long', 'DEBUG');
+        $this->add_log('set_bodyContent OK, bodyContent is '.$bytes.' bytes long', 'DEBUG');
         return true;
     }
 
