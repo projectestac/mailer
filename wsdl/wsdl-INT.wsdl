@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <WL5G3N0:definitions xmlns:WL5G3N0="http://schemas.xmlsoap.org/wsdl/" xmlns:WL5G3N1="http://www.gencat.cat/educacio/sscc/correu" xmlns:WL5G3N2="http://www.gencat.cat/educacio/esquema/Fault/v01" xmlns:WL5G3N3="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="http://www.gencat.cat/educacio/sscc/correu">
 <WL5G3N0:types>
 <xsd:schema xmlns:eml="http://www.gencat.cat/educacio/sscc/correu/types" xmlns:fault="http://www.gencat.cat/educacio/esquema/Fault/v01" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:ns="http://schemas.xmlsoap.org/soap/encoding/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:tns="http://www.gencat.cat/educacio/sscc/correu" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
