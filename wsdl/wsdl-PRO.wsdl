@@ -56,7 +56,7 @@
   </WL5G3N0:binding>
   <WL5G3N0:service name="Correu">
     <WL5G3N0:port binding="WL5G3N1:CorreuSoapHttp" name="CorreuHttpPort">
-      <WL5G3N3:address location="http://bus.ensenyament.intranet.gencat.cat:80/event/ServeisComuns/intern/EnviaCorreu/a1/EnviaCorreu"/>
+      <WL5G3N3:address location="http://bus.ensenyament.intranet.gencat.cat/event/ServeisComuns/intern/EnviaCorreu/a1/EnviaCorreu"/>
     </WL5G3N0:port>
   </WL5G3N0:service>
 </WL5G3N0:definitions>
