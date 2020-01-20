@@ -37,10 +37,8 @@ class mailsender {
      * Url of the allowed environments
      */
     private static $allowed_environments = array(
-        //'DES' => 'http://integracio.bus.ensenyament.intranet.gencat.cat/event/ServeisComuns/intern/EnviaCorreu/a1/EnviaCorreu',
         'DES' => 'http://xtec-wc.educacio.intranet:8080/esb/slide/ESB_Projects/ESB-EnviaCorreu_ESB-enviaCorreu/INT/ESB-Correu.wsdl',
-        'INT' => 'http://integracio.bus.ensenyament.intranet.gencat.cat/event/ServeisComuns/intern/EnviaCorreu/a1/EnviaCorreu?wsdl',
-        //'INT' => 'http://xtec-wc.educacio.intranet:8080/esb/slide/ESB_Projects/ESB-EnviaCorreu_ESB-enviaCorreu/INT/ESB-Correu.wsdl',
+	'INT' => 'http://integracio.bus.ensenyament.intranet.gencat.cat/event/ServeisComuns/intern/EnviaCorreu/a1/EnviaCorreu?wsdl',
         'ACC' => 'http://preproduccio.bus.ensenyament.intranet.gencat.cat/event/ServeisComuns/intern/EnviaCorreu/a1/EnviaCorreu/CorreuHttpPort?WSDL',
         'PRE' => 'http://preproduccio.bus.ensenyament.intranet.gencat.cat/event/ServeisComuns/intern/EnviaCorreu/a1/EnviaCorreu/CorreuHttpPort?WSDL',
         'PRO' => 'http://bus.ensenyament.intranet.gencat.cat/event/ServeisComuns/intern/EnviaCorreu/a1/EnviaCorreu/CorreuHttpPort?WSDL',
@@ -110,14 +108,15 @@ class mailsender {
             if (!$this->init_soap()) {
                 throw new Exception('Mailsender init_soap: Cannot load soap, service not avalaible or invalid wsdl');
             }
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
+
             $this->add_log('get_soapclient: '.$e->getMessage(), 'ERROR');
             throw $e;
         }
 
         try {
             $this->test_availability();
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             throw new Exception('Mailsender: Test availability failed with message "'. $e->getMessage().'"');
         }
         //$this->add_log('Class loaded successfull', 'DEBUG');
@@ -203,7 +202,7 @@ class mailsender {
 
             $this->add_log('send_mail: Send mail SoapFault Exception KO', 'ERROR');
             return false;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             // In case of KO, do not try again
             $this->clear_messages();
             $this->add_log('send_mail: Send mail KO', 'ERROR');
@@ -807,7 +806,7 @@ class mailsender {
 
                      default:
                         // date, ldate, ledate, leldate, beldate, lebelbe...
-                        continue;
+                        continue 2;
                   }
                }
 
@@ -908,7 +907,7 @@ class mailsender {
 
         try {
             return log4p::instance(true, $path, $debug);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             debugging('ERROR: Cannot initialize apligestlogger, there won\'t be any log.');
             debugging($e->getMessage());
         }
